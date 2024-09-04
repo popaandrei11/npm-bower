@@ -7,7 +7,7 @@ stages:
         displayName: 'Install npm dependencies'
         inputs:
           script: |
-            find . -name "package.json" -type f -print0 |
+            find . -name "bower.json" -type f -print0 |
             xargs -0 -I {} sh -c '
               dir=$(dirname "{}")
               cd "$dir" && npm install --lockfile-version 3 --package-lock-only --force || echo "Failed to generate package-lock.json in $dir"
