@@ -1,40 +1,43 @@
 stages:
-- stage: 'BlackDuck_Scan'
+- stage: 'Transform_Bower_to_NPM'
   jobs:
-    - job: detect
+    - job: transform
       steps:
       - task: CmdLine@2
-        displayName: 'Install npm dependencies'
+        displayName: 'Transform bower.json to package.json using npx bower-away'
         inputs:
           script: |
-            find . -name "bower.json" -type f -print0 |
-            xargs -0 -I {} sh -c 'dir=$(dirname "$1"); cd "$dir" && npm install --lockfile-version 3 --package-lock-only --force || echo "Failed to generate package-lock.json in $dir"' sh {}
+            # Ensure npx is installed
+            npm install -g npx
 
-      # Add a step to commit the changes
+            # Transform bower.json into package.json
+            npx bower-away
+
+            # Install npm dependencies and generate package-lock.json with lockfile version 3
+            npm install --lockfile-version 3 --package-lock-only --force
+
       - task: CmdLine@2
-        displayName: 'Commit package-lock.json files'
+        displayName: 'Configure Git'
         inputs:
           script: |
-            git add **/package-lock.json
-            git commit -m "Add or update package-lock.json files"
+            git config user.email "your-email@example.com"
+            git config user.name "Your Name"
 
-      # Add a step to push the changes back to the repository
+      - task: CmdLine@2
+        displayName: 'Pull latest changes'
+        inputs:
+          script: |
+            git pull origin master
+
+      - task: CmdLine@2
+        displayName: 'Commit package.json and package-lock.json'
+        inputs:
+          script: |
+            git add package.json package-lock.json
+            git commit -m "Transform bower.json to package.json and generate package-lock.json"
+
       - task: CmdLine@2
         displayName: 'Push changes'
         inputs:
           script: |
             git push origin HEAD:master
-      
-      - task: SynopsysDetectTask@9
-        displayName: 'Run Synopsys Detect'
-        inputs:
-          BlackDuckService: 'BlackDuck'
-          DetectArguments: |
-            --detect.project.name=npm-bower
-            --detect.project.version.name=1
-            --blackduck.trust.cert=true  
-            --detect.detector.search.depth=100  
-            --detect.tools=DETECTOR  
-            --detect.detector.search.continue=true
-            --detect.code.location.name=npm-bower-1
-          DetectVersion: 'latest'
