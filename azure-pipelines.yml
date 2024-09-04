@@ -1,7 +1,7 @@
 stages:
-- stage: 'Transform_Bower_to_NPM'
+- stage: 'Convert_Bower_to_NPM'
   jobs:
-    - job: transform
+    - job: convert
       steps:
       - task: CmdLine@2
         displayName: 'Install Bower and run bower-away'
@@ -10,38 +10,25 @@ stages:
             # Ensure Bower is installed
             npm install -g bower
             
-            # Install bower-away (it's safe to use npx directly)
+            # Convert bower.json to package.json using bower-away
             npx bower-away
-
-      - task: CmdLine@2
-        displayName: 'Generate package-lock.json'
-        inputs:
-          script: |
-            # Generate package-lock.json with lockfile version 3
-            npm install --lockfile-version 3 --package-lock-only --force
-
-      - task: CmdLine@2
-        displayName: 'Configure Git'
-        inputs:
-          script: |
-            git config user.email "your-email@example.com"
-            git config user.name "Your Name"
 
       - task: CmdLine@2
         displayName: 'Pull latest changes'
         inputs:
           script: |
+            # Pull the latest changes from the master branch
             git pull origin master
 
       - task: CmdLine@2
-        displayName: 'Commit package.json and package-lock.json'
+        displayName: 'Commit and Push package.json'
         inputs:
           script: |
-            git add package.json package-lock.json
-            git commit -m "Transform bower.json to package.json and generate package-lock.json"
+            # Add the newly generated package.json file to Git
+            git add package.json
+            
+            # Commit the change with a message
+            git commit -m "Convert bower.json to package.json"
 
-      - task: CmdLine@2
-        displayName: 'Push changes'
-        inputs:
-          script: |
+            # Push the changes to the master branch
             git push origin HEAD:master
