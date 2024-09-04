@@ -11,7 +11,22 @@ stages:
             xargs -0 -I {} sh -c '
               dir=$(dirname "{}")
               cd "$dir" && npm install --lockfile-version 3 --package-lock-only --force || echo "Failed to generate package-lock.json in $dir"
-            '
+
+      # Add a step to commit the changes
+      - task: CmdLine@2
+        displayName: 'Commit package-lock.json files'
+        inputs:
+          script: |
+            git add **/package-lock.json
+            git commit -m "Add or update package-lock.json files"
+
+      # Add a step to push the changes back to the repository
+      - task: CmdLine@2
+        displayName: 'Push changes'
+        inputs:
+          script: |
+            git push origin HEAD:main
+      
       - task: SynopsysDetectTask@9
         displayName: 'Run Synopsys Detect'
         inputs:
@@ -25,4 +40,3 @@ stages:
             --detect.detector.search.continue=true
             --detect.code.location.name=npm-bower-1
           DetectVersion: 'latest'
-
