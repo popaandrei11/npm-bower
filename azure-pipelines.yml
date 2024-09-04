@@ -8,9 +8,7 @@ stages:
         inputs:
           script: |
             find . -name "bower.json" -type f -print0 |
-            xargs -0 -I {} sh -c '
-              dir=$(dirname "{}")
-              cd "$dir" && npm install --lockfile-version 3 --package-lock-only --force || echo "Failed to generate package-lock.json in $dir"
+            xargs -0 -I {} sh -c 'dir=$(dirname "$1"); cd "$dir" && npm install --lockfile-version 3 --package-lock-only --force || echo "Failed to generate package-lock.json in $dir"' sh {}
 
       # Add a step to commit the changes
       - task: CmdLine@2
