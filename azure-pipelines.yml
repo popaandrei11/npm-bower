@@ -4,16 +4,20 @@ stages:
     - job: transform
       steps:
       - task: CmdLine@2
-        displayName: 'Transform bower.json to package.json using npx bower-away'
+        displayName: 'Install Bower and run bower-away'
         inputs:
           script: |
-            # Ensure npx is installed
-            npm install -g npx
-
-            # Transform bower.json into package.json
+            # Ensure Bower is installed
+            npm install -g bower
+            
+            # Install bower-away (it's safe to use npx directly)
             npx bower-away
 
-            # Install npm dependencies and generate package-lock.json with lockfile version 3
+      - task: CmdLine@2
+        displayName: 'Generate package-lock.json'
+        inputs:
+          script: |
+            # Generate package-lock.json with lockfile version 3
             npm install --lockfile-version 3 --package-lock-only --force
 
       - task: CmdLine@2
