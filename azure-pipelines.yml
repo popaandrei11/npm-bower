@@ -25,7 +25,7 @@ stages:
         displayName: 'Push changes'
         inputs:
           script: |
-            git push origin HEAD:main
+            git push origin HEAD:master
       
       - task: SynopsysDetectTask@9
         displayName: 'Run Synopsys Detect'
