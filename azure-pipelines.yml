@@ -13,6 +13,9 @@ stages:
             # Convert bower.json to package.json using bower-away
             npx bower-away
 
+            # List files to verify package.json was created
+            ls -la
+
       - task: CmdLine@2
         displayName: 'Configure Git'
         inputs:
@@ -20,6 +23,17 @@ stages:
             # Configure Git user
             git config user.email "andrei_popa11@yahoo.com"
             git config user.name "popaandrei11"
+
+            # Set Git credentials for pushing
+            git config --global credential.helper store
+            echo "https://<your-token>:x-oauth-basic@github.com" > ~/.git-credentials
+
+      - task: CmdLine@2
+        displayName: 'Checkout master branch'
+        inputs:
+          script: |
+            # Check out master branch
+            git checkout master
 
       - task: CmdLine@2
         displayName: 'Pull latest changes'
@@ -32,6 +46,9 @@ stages:
         displayName: 'Commit and Push package.json'
         inputs:
           script: |
+            # Verify package.json exists
+            ls -la
+
             # Add the newly generated package.json file to Git
             git add package.json
             
@@ -39,4 +56,4 @@ stages:
             git commit -m "Convert bower.json to package.json"
 
             # Push the changes to the master branch
-            git push origin HEAD:master
+            git push origin master
